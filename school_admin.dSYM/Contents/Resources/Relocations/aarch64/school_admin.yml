@@ -1,5 +1,5 @@
 ---
 triple:          'arm64-apple-darwin'
-binary-path:     '/Users/samueli.navarroriojas/Dev/tec/cplus/act3/school_admin'
+binary-path:     '/Users/jl/cplus-nov2025-act3/school_admin'
 relocations:     []
 ...
