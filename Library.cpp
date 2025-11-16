@@ -156,3 +156,22 @@ bool Library::removeBook(const string& isbn) {
     return false;
 }
 
+bool Library::removeMember(const string& memberId) {
+    // Find the member using iterator so we can erase
+    for (auto it = members.begin(); it != members.end(); ++it) {
+        if (it->getId() == memberId) {
+            // Check active loans for this member
+            int active = countActiveLoansForMember(memberId);
+            if (active > 0) {
+                cout << "Cannot remove member: they have active loans." << endl;
+                return false;
+            }
+            members.erase(it);
+            cout << "Member removed successfully." << endl;
+            return true;
+        }
+    }
+    cout << "Member not found." << endl;
+    return false;
+}
+
