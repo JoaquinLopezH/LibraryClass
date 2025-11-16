@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "Library.h"
+#include <limits>
 
 using namespace std;
 
@@ -28,6 +29,7 @@ int main() {
         cout << "5. Borrow a book" << endl;
         cout << "6. Return a book" << endl;
         cout << "0. Exit" << endl;
+    cout << "7. Search book by title or ISBN" << endl;
         cout << "Select option: ";
         cin >> option;
 
@@ -63,6 +65,23 @@ int main() {
             cout << "Return date (YYYY-MM-DD): ";
             cin >> date;
             library.returnBook(memberId, isbn, date);
+            cout << endl;
+        }
+        else if (option == 7) {
+            // consume leftover newline before getline
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            string query;
+            cout << "Enter book title (partial) or ISBN: ";
+            getline(cin, query);
+            auto results = library.searchBooks(query);
+            if (results.empty()) {
+                cout << "No books found matching '" << query << "'." << endl;
+            } else {
+                cout << "Found " << results.size() << " book(s):" << endl;
+                for (const auto& b : results) {
+                    b.printInfo();
+                }
+            }
             cout << endl;
         }
     } while (option != 0);

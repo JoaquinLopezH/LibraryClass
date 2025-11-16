@@ -21,6 +21,9 @@ private:
     Loan* findActiveLoan(const string& memberId, const string& isbn);
 
 public:
+    // Search books by title (partial, case-insensitive) or exact ISBN match.
+    // Returns a vector of matching Book objects.
+    vector<Book> searchBooks(const string& query) const;
     void addBook(const Book& book);
     void addMember(const Member& member);
     void listBooks() const;

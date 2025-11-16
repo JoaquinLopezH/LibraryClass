@@ -1,5 +1,7 @@
 #include "Library.h"
 #include <iostream>
+#include <algorithm>
+#include <cctype>
 
 Book* Library::findBook(const string& isbn) {
     for (auto& book : books) {
@@ -173,5 +175,44 @@ bool Library::removeMember(const string& memberId) {
     }
     cout << "Member not found." << endl;
     return false;
+}
+
+// Helper to convert string to lowercase
+static string toLower(const string& s) {
+    string out = s;
+    std::transform(out.begin(), out.end(), out.begin(), [](unsigned char c){ return std::tolower(c); });
+    return out;
+}
+
+vector<Book> Library::searchBooks(const string& query) const {
+    vector<Book> results;
+    if (query.empty()) return results;
+
+    // exact ISBN match first
+    for (const auto& book : books) {
+        if (book.getIsbn() == query) {
+            results.push_back(book);
+            // continue - there could be multiple books? ISBNs are expected unique but don't assume
+        }
+    }
+
+    // case-insensitive substring match on title
+    string qLower = toLower(query);
+    for (const auto& book : books) {
+        string titleLower = toLower(book.getTitle());
+        if (titleLower.find(qLower) != string::npos) {
+            // avoid duplicating if exact ISBN already matched this same book
+            bool already = false;
+            for (const auto& r : results) {
+                if (r.getIsbn() == book.getIsbn()) {
+                    already = true;
+                    break;
+                }
+            }
+            if (!already) results.push_back(book);
+        }
+    }
+
+    return results;
 }
 
