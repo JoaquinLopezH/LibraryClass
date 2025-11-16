@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cctype>
 
+#include "CD.h"
+
 Book* Library::findBook(const string& isbn) {
     for (auto& book : books) {
         if (book.getIsbn() == isbn) {
@@ -17,6 +19,13 @@ Member* Library::findMember(const string& memberId) {
         if (member.getId() == memberId) {
             return &member;
         }
+    }
+    return nullptr;
+}
+
+CD* Library::findCD(const string& id) {
+    for (auto& cd : cds) {
+        if (cd.getId() == id) return &cd;
     }
     return nullptr;
 }
@@ -40,6 +49,15 @@ bool Library::isBookAvailable(const string& isbn) const {
     return true;
 }
 
+bool Library::isCdAvailable(const string& id) const {
+    for (const auto& loan : loans) {
+        if (loan.getIsbn() == id && loan.isActive()) {
+            return false;
+        }
+    }
+    return true;
+}
+
 Loan* Library::findActiveLoan(const string& memberId, const string& isbn) {
     for (auto& loan : loans) {
         if (loan.getMemberId() == memberId &&
@@ -55,6 +73,10 @@ void Library::addBook(const Book& book) {
     books.push_back(book);
 }
 
+void Library::addCD(const CD& cd) {
+    cds.push_back(cd);
+}
+
 void Library::addMember(const Member& member) {
     members.push_back(member);
 }
@@ -63,6 +85,14 @@ void Library::listBooks() const {
     cout << "=== Books in library ===" << endl;
     for (const auto& book : books) {
         book.printInfo();
+    }
+    cout << endl;
+}
+
+void Library::listCDs() const {
+    cout << "=== CDs in library ===" << endl;
+    for (const auto& cd : cds) {
+        cd.printInfo();
     }
     cout << endl;
 }
@@ -116,6 +146,35 @@ bool Library::borrowBook(const string& memberId, const string& isbn, const strin
     return true;
 }
 
+bool Library::borrowCD(const string& memberId, const string& id, const string& borrowDate) {
+    Member* member = findMember(memberId);
+    if (!member) {
+        cout << "Member not found." << endl;
+        return false;
+    }
+
+    CD* cd = findCD(id);
+    if (!cd) {
+        cout << "CD not found." << endl;
+        return false;
+    }
+
+    if (!isCdAvailable(id)) {
+        cout << "CD is currently not available." << endl;
+        return false;
+    }
+
+    int activeLoans = countActiveLoansForMember(memberId);
+    if (activeLoans >= member->getMaxBooks()) {
+        cout << "Member has reached the maximum number of active loans." << endl;
+        return false;
+    }
+
+    loans.push_back(Loan(id, memberId, borrowDate));
+    cout << "CD borrowed successfully." << endl;
+    return true;
+}
+
 bool Library::returnBook(const string& memberId, const string& isbn, const string& returnDate) {
     Member* member = findMember(memberId);
     if (!member) {
@@ -140,6 +199,30 @@ bool Library::returnBook(const string& memberId, const string& isbn, const strin
     return true;
 }
 
+bool Library::returnCD(const string& memberId, const string& id, const string& returnDate) {
+    Member* member = findMember(memberId);
+    if (!member) {
+        cout << "Member not found." << endl;
+        return false;
+    }
+
+    CD* cd = findCD(id);
+    if (!cd) {
+        cout << "CD not found." << endl;
+        return false;
+    }
+
+    Loan* loan = findActiveLoan(memberId, id);
+    if (!loan) {
+        cout << "No active loan found for this member and CD." << endl;
+        return false;
+    }
+
+    loan->setReturnDate(returnDate);
+    cout << "CD returned successfully." << endl;
+    return true;
+}
+
 bool Library::removeBook(const string& isbn) {
     // Find the book using iterator so we can erase it
     for (auto it = books.begin(); it != books.end(); ++it) {
@@ -155,6 +238,22 @@ bool Library::removeBook(const string& isbn) {
         }
     }
     cout << "Book not found." << endl;
+    return false;
+}
+
+bool Library::removeCD(const string& id) {
+    for (auto it = cds.begin(); it != cds.end(); ++it) {
+        if (it->getId() == id) {
+            if (!isCdAvailable(id)) {
+                cout << "Cannot remove CD: it currently has an active loan." << endl;
+                return false;
+            }
+            cds.erase(it);
+            cout << "CD removed successfully." << endl;
+            return true;
+        }
+    }
+    cout << "CD not found." << endl;
     return false;
 }
 

@@ -28,7 +28,7 @@ void Loan::setReturnDate(const string& rDate) {
 }
 
 void Loan::printInfo() const {
-    cout << "Loan - ISBN: " << isbn
+    cout << "Loan - Item ID: " << isbn
          << " | Member ID: " << memberId
          << " | Borrowed: " << borrowDate
          << " | Returned: "
